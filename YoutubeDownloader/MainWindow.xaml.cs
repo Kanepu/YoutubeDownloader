@@ -1,4 +1,4 @@
-﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -42,7 +42,7 @@ namespace YoutubeDownloader
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null).FileExists("youtubedownloader.dat"))
-                using (IsolatedStorageFileStream isoStream = new IsolatedStorageFileStream("TestStore.txt", FileMode.Open, IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null)))
+                using (IsolatedStorageFileStream isoStream = new IsolatedStorageFileStream("youtubedownloader.dat", FileMode.Open, IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null)))
                 using (StreamReader reader = new StreamReader(isoStream))
                 {
                     var x = JsonConvert.DeserializeObject<settings>(reader.ReadToEnd());
@@ -92,6 +92,7 @@ namespace YoutubeDownloader
                 bool delete = bool.Parse(((string)e.Argument).Split(':')[3]);
                 bool open = bool.Parse(((string)e.Argument).Split(':')[4]);
                 List<string> urlstodelete = new List<string>();
+                string startpath = string.Empty;
                 foreach (var x in videoitems)
                 {
                     var youtube = new YoutubeClient();
@@ -109,7 +110,9 @@ namespace YoutubeDownloader
                         string nametouse = x.title;
                         if (!string.IsNullOrWhiteSpace(x.playlist))
                             nametouse = x.playlist;
-                        var d = Directory.CreateDirectory(Path.Combine(mainpath, Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()));
+                        var dd = Directory.CreateDirectory(Path.Combine(mainpath, Regex.Replace(x.channel, @"[^A-Za-z0-9 ]", "").Trim()));
+                        startpath = dd.FullName;
+                        var d = Directory.CreateDirectory(Path.Combine(mainpath, dd.FullName, Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()));
                         await youtube.Videos.Streams.DownloadAsync(streamInfo, Path.Combine(d.FullName, $"{Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()}.{streamInfo.Container}"));
                         if (zip)
                         {
@@ -118,9 +121,9 @@ namespace YoutubeDownloader
                             File.Delete(Path.Combine(d.FullName, $"{Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()}.{streamInfo.Container}"));
                             d.Delete(true);
                         }
-                        if (open)
-                        Process.Start(Path.Combine(d.FullName, ".."));
                     }
+                    if (open)
+                        Process.Start(startpath);
                     urlstodelete.Add(x.url);
                 }
                 if (delete)
