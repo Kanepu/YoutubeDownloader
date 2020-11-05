@@ -1,0 +1,67 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:YoutubeDownloader"
+        mc:Ignorable="d"
+        x:Class="YoutubeDownloader.MainWindow"
+        Title="YoutubeDownloader" Height="385.372" Width="814.362" Loaded="Window_Loaded" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <GradientStop Color="#FF533E3E" Offset="0.116"/>
+                <GradientStop Color="#FF643131" Offset="1"/>
+                <GradientStop Color="#FF4F3131" Offset="0.423"/>
+                <GradientStop Color="#FF643636" Offset="0.7"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+        <ComboBox x:Name="state" SelectedValuePath="Content" HorizontalAlignment="Left" Margin="268,19,0,0" VerticalAlignment="Top" Width="120" Background="{x:Null}" Foreground="#FFBF9C9C">
+            <ComboBoxItem Content="Video" IsSelected="True"/>
+            <ComboBoxItem Content="Playlist"/>
+            <ComboBoxItem Content="Channel"/>
+        </ComboBox>
+        <TextBox x:Name="link" HorizontalAlignment="Left" Height="23" Margin="49,18,0,0" VerticalAlignment="Top" Width="214" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+        <Label Content="Link:" HorizontalAlignment="Left" Margin="10,15,0,0" VerticalAlignment="Top" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+        <CheckBox x:Name="audio" Content="Audio" HorizontalAlignment="Left" Margin="729,46,0,0" VerticalAlignment="Top" IsChecked="True" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+        <CheckBox x:Name="video" Content="Video" HorizontalAlignment="Left" Margin="729,66,0,0" VerticalAlignment="Top" IsChecked="True" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+        <DataGrid x:Name="data" LoadingRow="DataGrid_LoadingRow" HorizontalAlignment="Left" Height="298" Margin="10,46,0,0" VerticalAlignment="Top" Width="714" AutoGenerateColumns="False" Background="{x:Null}" Foreground="#FFBF9C9C" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Binding="{Binding download}" Width="10">
+                    <DataGridCheckBoxColumn.CellStyle>
+                        <Style>
+                            <EventSetter Event="CheckBox.Checked" Handler="OnChecked"/>
+                            <EventSetter Event="CheckBox.Unchecked" Handler="OnUnchecked"/>
+                        </Style>
+                    </DataGridCheckBoxColumn.CellStyle>
+                </DataGridCheckBoxColumn>
+                <DataGridTemplateColumn Header="Thumbnail">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Image Source="{Binding Path=thumbnail}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Binding="{Binding Path=title}" Header="Title" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=channel}" Header="Author" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=date}" Header="Creation date" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=length}" Header="Length" IsReadOnly="True"/>
+                <DataGridTextColumn Binding="{Binding Path=url}" Header="URL" IsReadOnly="True"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button x:Name="go" Content="GO" HorizontalAlignment="Left" Margin="393,19,0,0" VerticalAlignment="Top" Width="37" Height="22" Click="Button_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+        <CheckBox x:Name="zip" Content="ZIP" HorizontalAlignment="Left" Margin="729,86,0,0" VerticalAlignment="Top" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+        <Label x:Name="err" Content="ERROR" HorizontalAlignment="Left" Margin="448,15,0,0" VerticalAlignment="Top" Foreground="Red" FontWeight="Bold" Visibility="Hidden"/>
+        <Button x:Name="clear" Content="Clear" HorizontalAlignment="Left" Margin="439,19,0,0" VerticalAlignment="Top" Width="37" Height="22" Click="clear_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+        <Button x:Name="cancel" Content="Cancel" HorizontalAlignment="Left" Margin="485,19,0,0" VerticalAlignment="Top" Width="41" Height="22" Click="clear_Copy_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+        <Label x:Name="speed" Content="" HorizontalAlignment="Left" Margin="533,15,0,0" VerticalAlignment="Top" Height="26" Background="{x:Null}" Foreground="#FFBF9C9C" Width="233"/>
+        <Button x:Name="download" Content="Download" HorizontalAlignment="Left" Margin="729,106,0,0" VerticalAlignment="Top" Width="67" Height="22" Click="download_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+        <Button x:Name="dir" Content="Directory" HorizontalAlignment="Left" Margin="729,151,0,0" VerticalAlignment="Top" Width="67" Height="22" Click="dir_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+        <CheckBox x:Name="delete" Content="Delete" HorizontalAlignment="Left" Margin="729,132,0,0" VerticalAlignment="Top" Background="{x:Null}" Foreground="#FFBF9C9C" IsChecked="True"/>
+        <CheckBox x:Name="open" Content="Open" HorizontalAlignment="Left" Margin="729,179,0,0" VerticalAlignment="Top" Background="{x:Null}" Foreground="#FFBF9C9C" IsChecked="True"/>
+        <Button x:Name="save" Content="Save" HorizontalAlignment="Left" Margin="729,199,0,0" VerticalAlignment="Top" Width="67" Height="22" Click="save_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+        <Button x:Name="export" Content="Export" HorizontalAlignment="Left" Margin="729,227,0,0" VerticalAlignment="Top" Width="67" Height="22" Click="export_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+        <Button x:Name="import" Content="Import" HorizontalAlignment="Left" Margin="729,254,0,0" VerticalAlignment="Top" Width="67" Height="22" Click="import_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
+
+    </Grid>
+</Window>
