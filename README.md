@@ -12,6 +12,7 @@ YoutubeDownloader uses the [YoutubeExplode](https://github.com/Tyrrrz/YoutubeExp
  - Can fetch videos from channels
  - Export videos
  - Import videos 
+ - Configs
 
 ### Screenshots
 ![](https://i.ibb.co/x7wxn85/Screenshot-2020-11-05-235150.png)
