@@ -93,50 +93,68 @@ namespace YoutubeDownloader
                 bool open = bool.Parse(((string)e.Argument).Split(':')[4]);
                 List<string> urlstodelete = new List<string>();
                 string startpath = string.Empty;
+                var dd = Directory.CreateDirectory(Path.Combine(mainpath, Regex.Replace(videoitems[0].channel, @"[^A-Za-z0-9 ]", "").Trim()));
+                int count = 0;
                 foreach (var x in videoitems)
                 {
-                    var youtube = new YoutubeClient();
-                    var streamManifest = await youtube.Videos.Streams.GetManifestAsync(x.id);
-                    IStreamInfo streamInfo = null;
-                    if (audio && video)
-                        streamInfo = streamManifest.GetMuxed().WithHighestVideoQuality();
-                    else if (audio)
-                        streamInfo = streamManifest.GetAudioOnly().WithHighestBitrate();
-                    else if (video)
-                        streamInfo = streamManifest.GetVideoOnly().Where(s => s.Container == Container.Mp4).WithHighestVideoQuality();
-                    if (streamInfo != null)
+                    try
                     {
-                        var stream = await youtube.Videos.Streams.GetAsync(streamInfo);
-                        string nametouse = x.title;
-                        if (!string.IsNullOrWhiteSpace(x.playlist))
-                            nametouse = x.playlist;
-                        var dd = Directory.CreateDirectory(Path.Combine(mainpath, Regex.Replace(x.channel, @"[^A-Za-z0-9 ]", "").Trim()));
-                        startpath = dd.FullName;
-                        var d = Directory.CreateDirectory(Path.Combine(mainpath, dd.FullName, Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()));
-                        await youtube.Videos.Streams.DownloadAsync(streamInfo, Path.Combine(d.FullName, $"{Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()}.{streamInfo.Container}"));
-                        if (zip)
+                        var youtube = new YoutubeClient();
+                        var streamManifest = await youtube.Videos.Streams.GetManifestAsync(x.id);
+                        IStreamInfo streamInfo = null;
+                        if (audio && video)
+                            streamInfo = streamManifest.GetMuxed().WithHighestVideoQuality();
+                        else if (audio)
+                            streamInfo = streamManifest.GetAudioOnly().WithHighestBitrate();
+                        else if (video)
+                            streamInfo = streamManifest.GetVideoOnly().Where(s => s.Container == Container.Mp4).WithHighestVideoQuality();
+                        if (streamInfo != null)
                         {
-                            CompressFile(Path.Combine(d.FullName, $"{Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()}.{streamInfo.Container}"));
-                            File.Move($"{Path.Combine(d.FullName, $"{Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()}.{streamInfo.Container}")}.gz", Path.Combine(d.FullName, "..", $"{Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()}.{streamInfo.Container}.gz"));
-                            File.Delete(Path.Combine(d.FullName, $"{Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()}.{streamInfo.Container}"));
-                            d.Delete(true);
+                            var stream = await youtube.Videos.Streams.GetAsync(streamInfo);
+                            string nametouse = x.title;
+                            if (!string.IsNullOrWhiteSpace(x.playlist))
+                                nametouse = x.playlist;
+                            startpath = dd.FullName;
+                            var d = Directory.CreateDirectory(Path.Combine(mainpath, dd.FullName, Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()));
+                            await youtube.Videos.Streams.DownloadAsync(streamInfo, Path.Combine(d.FullName, $"{Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()}.{streamInfo.Container}"));
+                            if (zip)
+                            {
+                                CompressFile(Path.Combine(d.FullName, $"{Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()}.{streamInfo.Container}"));
+                                File.Move($"{Path.Combine(d.FullName, $"{Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()}.{streamInfo.Container}")}.gz", Path.Combine(d.FullName, "..", $"{Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()}.{streamInfo.Container}.gz"));
+                                File.Delete(Path.Combine(d.FullName, $"{Regex.Replace(nametouse, @"[^A-Za-z0-9 ]", "").Trim()}.{streamInfo.Container}"));
+                                d.Delete(true);
+                            }
                         }
+                        if (open)
+                            Process.Start(startpath);
+                        urlstodelete.Add(x.url);
+                        count++;
                     }
-                    if (open)
-                        Process.Start(startpath);
-                    urlstodelete.Add(x.url);
+                    catch
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            link.Text = "ERROR IN ONE OR MORE VIDEOS";
+                        });
+                    }
                 }
                 if (delete)
-                foreach (var x in urlstodelete)
-                    videoitems.Remove(videoitems.Where(a => a.url.Equals(x)).FirstOrDefault());
+                    foreach (var x in urlstodelete)
+                        Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                videoitems.Remove(videoitems.Where(a => a.url.Equals(x)).FirstOrDefault());
+                            });
                 urlstodelete = null;
                 Application.Current.Dispatcher.Invoke(() =>
-                {
-                    data.ItemsSource = new ObservableCollection<videoitem>(videoitems);
-                    stopwatch.Stop();
-                    speed.Content = $"Downloaded {videoitems.Count} video(s) in {stopwatch.Elapsed.TotalSeconds} secs";
-                });
-        }
+                    {
+                        data.ItemsSource = new ObservableCollection<videoitem>(videoitems);
+                        stopwatch.Stop();
+                        speed.Content = $"Downloaded {count} video(s) in {stopwatch.Elapsed.TotalSeconds} secs";
+                        download.IsEnabled = true;
+                        go.IsEnabled = true;
+                        clear.IsEnabled = true;
+                    });
+            }
             catch
             {
                 Application.Current.Dispatcher.Invoke(() =>
@@ -200,21 +218,30 @@ namespace YoutubeDownloader
                 int added = 0;
                 foreach (var video in videos)
                 {
-                    if (videoitems.Where(a => a.url.Equals(video.Url)).Count() == 0)
-                        videoitems.Add(new videoitem()
+                    try
+                    {
+                        if (videoitems.Where(a => a.url.Equals(video.Url)).Count() == 0)
+                            videoitems.Add(new videoitem()
+                            {
+                                thumbnailpic = ImageSourceFromBitmap(UrlToBitmap(video.Thumbnails.LowResUrl)),
+                                thumbnail = video.Thumbnails.LowResUrl,
+                                title = video.Title,
+                                date = video.UploadDate.ToString(),
+                                length = video.Duration.ToString(@"mm\:ss"),
+                                url = video.Url,
+                                id = video.Id,
+                                channel = video.Author,
+                                playlist = (await youtube.Playlists.GetAsync($"https://youtube.com/channel/{getChannelID((string)e.Argument)}")).Title,
+                                download = true
+                            });
+                        added++;
+                    } catch
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
                         {
-                            thumbnailpic = ImageSourceFromBitmap(UrlToBitmap(video.Thumbnails.LowResUrl)),
-                            thumbnail = video.Thumbnails.LowResUrl,
-                            title = video.Title,
-                            date = video.UploadDate.ToString(),
-                            length = video.Duration.ToString(@"mm\:ss"),
-                            url = video.Url,
-                            id = video.Id,
-                            channel = video.Author,
-                            playlist = (await youtube.Playlists.GetAsync($"https://youtube.com/channel/{getChannelID((string)e.Argument)}")).Title,
-                            download = true
+                            link.Text = "ERROR IN ONE OR MORE VIDEOS";
                         });
-                    added++;
+                    }
                 }
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -246,20 +273,29 @@ namespace YoutubeDownloader
                 int added = 0;
                 foreach (var video in videos)
                 {
-                    if (videoitems.Where(a => a.url.Equals(video.Url)).Count() == 0)
-                        videoitems.Add(new videoitem()
+                    try
+                    {
+                        if (videoitems.Where(a => a.url.Equals(video.Url)).Count() == 0)
+                            videoitems.Add(new videoitem()
+                            {
+                                thumbnailpic = ImageSourceFromBitmap(UrlToBitmap(video.Thumbnails.LowResUrl)),
+                                thumbnail = video.Thumbnails.LowResUrl,
+                                title = video.Title,
+                                date = video.UploadDate.ToString(),
+                                length = video.Duration.ToString(@"mm\:ss"),
+                                url = video.Url,
+                                id = video.Id,
+                                channel = video.Author,
+                                download = true
+                            });
+                        added++;
+                    } catch
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
                         {
-                            thumbnailpic = ImageSourceFromBitmap(UrlToBitmap(video.Thumbnails.LowResUrl)),
-                            thumbnail = video.Thumbnails.LowResUrl,
-                            title = video.Title,
-                            date = video.UploadDate.ToString(),
-                            length = video.Duration.ToString(@"mm\:ss"),
-                            url = video.Url,
-                            id = video.Id,
-                            channel = video.Author,
-                            download = true
+                            link.Text = "ERROR IN ONE OR MORE VIDEOS";
                         });
-                    added++;
+                    }
                 }
                 Application.Current.Dispatcher.Invoke(() =>
                     {
