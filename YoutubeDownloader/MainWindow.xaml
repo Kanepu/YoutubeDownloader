@@ -58,7 +58,7 @@
         <Button x:Name="download" Content="Download" HorizontalAlignment="Left" Margin="729,106,0,0" VerticalAlignment="Top" Width="67" Height="22" Click="download_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
         <Button x:Name="dir" Content="Directory" HorizontalAlignment="Left" Margin="729,151,0,0" VerticalAlignment="Top" Width="67" Height="22" Click="dir_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
         <CheckBox x:Name="delete" Content="Delete" HorizontalAlignment="Left" Margin="729,132,0,0" VerticalAlignment="Top" Background="{x:Null}" Foreground="#FFBF9C9C" IsChecked="True"/>
-        <CheckBox x:Name="open" Content="Open" HorizontalAlignment="Left" Margin="729,179,0,0" VerticalAlignment="Top" Background="{x:Null}" Foreground="#FFBF9C9C" IsChecked="True"/>
+        <CheckBox x:Name="open" Content="Open" HorizontalAlignment="Left" Margin="729,179,0,0" VerticalAlignment="Top" Background="{x:Null}" Foreground="#FFBF9C9C"/>
         <Button x:Name="save" Content="Save" HorizontalAlignment="Left" Margin="729,199,0,0" VerticalAlignment="Top" Width="67" Height="22" Click="save_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
         <Button x:Name="export" Content="Export" HorizontalAlignment="Left" Margin="729,227,0,0" VerticalAlignment="Top" Width="67" Height="22" Click="export_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
         <Button x:Name="import" Content="Import" HorizontalAlignment="Left" Margin="729,254,0,0" VerticalAlignment="Top" Width="67" Height="22" Click="import_Click" Background="{x:Null}" Foreground="#FFBF9C9C"/>
